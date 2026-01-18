@@ -1,5 +1,5 @@
 # Discord Mass DM Advertiser (Selfbot)
-**Created by GH0ST-codes-pl**
+### 🚀 Made by [GH0ST-codes-pl](https://github.com/GH0ST-codes-pl)
 
 [English](#english) | [Polski](#polski)
 
