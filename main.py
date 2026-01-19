@@ -78,9 +78,9 @@ class Discord(object):
 
         self.message = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Message \x1b[38;5;9m->\x1b[0m ").replace("\\n", "\n")
         try:
-            self.delay = float(input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Delay \x1b[38;5;9m->\x1b[0m "))
+            self.delay = float(input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Delay (recommended: 3-5s) \x1b[38;5;9m->\x1b[0m "))
         except Exception:
-            self.delay = 0
+            self.delay = 3.0  # Default 3 seconds for safety
 
         self.image = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Image Path (Enter for none) \x1b[38;5;9m->\x1b[0m ").strip()
         if self.image != "" and not os.path.exists(self.image):
@@ -174,6 +174,8 @@ class Discord(object):
 
     async def create_dm(self, token, user_id):
         try:
+            # Add random delay to appear more human-like
+            await asyncio.sleep(random.uniform(1.0, 3.0))
             headers = await self.headers(token)
             async with ClientSession(headers=headers) as client:
                 async with client.post("https://discord.com/api/v9/users/@me/channels", json={"recipients": [user_id]}) as response:
@@ -190,15 +192,17 @@ class Discord(object):
                         return False
                     elif response.status == 429:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        time.sleep(self.delay)
+                        await asyncio.sleep(random.uniform(10.0, 15.0))  # Longer wait on rate limit
                         return await self.create_dm(token, user_id)
                     else:
                         return False
         except Exception:
-            return await self.create_dm(token, user)
+            return await self.create_dm(token, user_id)
 
     async def direct_message(self, token: str, channel: str):
         try:
+            # Add random delay before sending message
+            await asyncio.sleep(random.uniform(1.5, 4.0))
             headers = await self.headers(token)
             async with ClientSession(headers=headers) as client:
                 if self.image != "":
@@ -219,7 +223,7 @@ class Discord(object):
                         return False
                     elif response.status == 403 and response_data["code"] == 40003:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        time.sleep(self.delay)
+                        await asyncio.sleep(random.uniform(10.0, 15.0))
                         await self.direct_message(token, channel)
                     elif response.status == 403 and response_data["code"] == 50007:
                         logging.info("User has direct messages disabled \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
@@ -229,7 +233,7 @@ class Discord(object):
                         return False
                     elif response.status == 429:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        time.sleep(self.delay)
+                        await asyncio.sleep(random.uniform(10.0, 15.0))
                         await self.direct_message(token, channel)
                     else:
                         return False
