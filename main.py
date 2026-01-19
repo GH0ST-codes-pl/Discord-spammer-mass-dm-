@@ -17,6 +17,37 @@ logging.basicConfig(
     datefmt="%H:%M:%S"
 )
 
+def print_banner():
+    """Display colorful ASCII banner with author credits"""
+    banner = """
+\x1b[38;5;196m╔═══════════════════════════════════════════════════════════════════════╗
+\x1b[38;5;202m║  ██████╗ ██╗███████╗ ██████╗ ██████╗ ██████╗ ██████╗                ║
+\x1b[38;5;208m║  ██╔══██╗██║██╔════╝██╔════╝██╔═══██╗██╔══██╗██╔══██╗               ║
+\x1b[38;5;214m║  ██║  ██║██║███████╗██║     ██║   ██║██████╔╝██║  ██║               ║
+\x1b[38;5;220m║  ██║  ██║██║╚════██║██║     ██║   ██║██╔══██╗██║  ██║               ║
+\x1b[38;5;226m║  ██████╔╝██║███████║╚██████╗╚██████╔╝██║  ██║██████╔╝               ║
+\x1b[38;5;190m║  ╚═════╝ ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝                ║
+\x1b[38;5;154m║                                                                       ║
+\x1b[38;5;118m║           ███╗   ███╗ █████╗ ███████╗███████╗    ██████╗ ███╗   ███╗ ║
+\x1b[38;5;82m║           ████╗ ████║██╔══██╗██╔════╝██╔════╝    ██╔══██╗████╗ ████║ ║
+\x1b[38;5;46m║           ██╔████╔██║███████║███████╗███████╗    ██║  ██║██╔████╔██║ ║
+\x1b[38;5;51m║           ██║╚██╔╝██║██╔══██║╚════██║╚════██║    ██║  ██║██║╚██╔╝██║ ║
+\x1b[38;5;45m║           ██║ ╚═╝ ██║██║  ██║███████║███████║    ██████╔╝██║ ╚═╝ ██║ ║
+\x1b[38;5;39m║           ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝    ╚═════╝ ╚═╝     ╚═╝ ║
+\x1b[38;5;33m║                                                                       ║
+\x1b[38;5;27m║                    \x1b[1m\x1b[38;5;201m⚡ MASS DM ADVERTISER ⚡\x1b[0m                      ║
+\x1b[38;5;21m║                                                                       ║
+\x1b[38;5;57m║              \x1b[38;5;255m🚀 Created by: \x1b[1m\x1b[38;5;196mGH0ST-codes-pl\x1b[0m\x1b[38;5;57m 🚀                  ║
+\x1b[38;5;93m║          \x1b[38;5;255m🔗 GitHub: \x1b[4m\x1b[38;5;51mgithub.com/GH0ST-codes-pl\x1b[0m\x1b[38;5;93m 🔗             ║
+\x1b[38;5;129m║                                                                       ║
+\x1b[38;5;165m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Single User DM    \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Mass DM    \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Mass Channel      \x1b[38;5;165m║
+\x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Image Support     \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Rate Limit Protection           \x1b[38;5;201m║
+\x1b[38;5;196m╚═══════════════════════════════════════════════════════════════════════╝\x1b[0m
+"""
+    print(banner)
+    print("\x1b[38;5;208m⚠️  WARNING: \x1b[38;5;255mSelfbots are against Discord ToS. Use at your own risk!\x1b[0m")
+    print("\x1b[38;5;46m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n")
+
 class Discord(object):
 
     def __init__(self):
@@ -26,6 +57,8 @@ class Discord(object):
             self.clear = lambda: os.system("cls")
 
         self.clear()
+        print_banner()  # Display colorful banner with credits
+        
         self.tokens = []
         self.cached_headers = {}
 
@@ -43,24 +76,26 @@ class Discord(object):
             sys.exit()
 
         logging.info("Successfully loaded \x1b[38;5;9m%s\x1b[0m token(s)\n" % (len(self.tokens)))
-        logging.info("Successfully loaded \x1b[38;5;9m%s\x1b[0m token(s)\n" % (len(self.tokens)))
         
-        print("\x1b[38;5;9m[1]\x1b[0m Single User")
-        print("\x1b[38;5;9m[2]\x1b[0m Mass DM")
-        print("\x1b[38;5;9m[3]\x1b[0m Mass Channel")
-        self.mode = input("\n\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Choice \x1b[38;5;9m->\x1b[0m ")
+        print("\x1b[38;5;51m╔════════════════════════════════════╗\x1b[0m")
+        print("\x1b[38;5;51m║\x1b[0m         \x1b[1m\x1b[38;5;226mSELECT MODE\x1b[0m              \x1b[38;5;51m║\x1b[0m")
+        print("\x1b[38;5;51m╚════════════════════════════════════╝\x1b[0m\n")
+        print("\x1b[38;5;46m  [1]\x1b[0m 🎯 Single User DM")
+        print("\x1b[38;5;201m  [2]\x1b[0m 📢 Mass DM")
+        print("\x1b[38;5;196m  [3]\x1b[0m 📺 Mass Channel\n")
+        self.mode = input("\x1b[38;5;51m[?]\x1b[0m Choice \x1b[38;5;51m→\x1b[0m ")
         if self.mode not in ["1", "2", "3"]:
             sys.exit()
         
         if self.mode == "1":
-            self.user_id = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m User ID \x1b[38;5;9m->\x1b[0m ")
+            self.user_id = input("\x1b[38;5;51m[?]\x1b[0m User ID \x1b[38;5;51m→\x1b[0m ")
         else:
-            server_input = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Invite or Guild ID \x1b[38;5;9m->\x1b[0m ")
+            server_input = input("\x1b[38;5;51m[?]\x1b[0m Invite or Guild ID \x1b[38;5;51m→\x1b[0m ")
             if server_input.isdigit():
                  self.guild_id = server_input
                  # Only ask for Channel ID if Mode 2 (Mass DM requires it for scraping members)
                  if self.mode == "2":
-                     self.channel_id = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Channel ID \x1b[38;5;9m->\x1b[0m ")
+                     self.channel_id = input("\x1b[38;5;51m[?]\x1b[0m Channel ID \x1b[38;5;51m→\x1b[0m ")
                  else:
                      self.channel_id = None
                  self.invite = None
@@ -70,24 +105,26 @@ class Discord(object):
         # Ask for amount for Single User (1) AND Mass Channel (3)
         if self.mode in ["1", "3"]:
             try:
-                self.amount = int(input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Amount \x1b[38;5;9m->\x1b[0m "))
+                self.amount = int(input("\x1b[38;5;51m[?]\x1b[0m Amount \x1b[38;5;51m→\x1b[0m "))
             except Exception:
                 self.amount = 1
         else:
             self.amount = 1
 
-        self.message = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Message \x1b[38;5;9m->\x1b[0m ").replace("\\n", "\n")
+        self.message = input("\x1b[38;5;51m[?]\x1b[0m Message \x1b[38;5;51m→\x1b[0m ").replace("\\n", "\n")
         try:
-            self.delay = float(input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Delay (recommended: 3-5s) \x1b[38;5;9m->\x1b[0m "))
+            self.delay = float(input("\x1b[38;5;51m[?]\x1b[0m Delay \x1b[38;5;226m(recommended: 3-5s)\x1b[0m \x1b[38;5;51m→\x1b[0m "))
         except Exception:
             self.delay = 3.0  # Default 3 seconds for safety
 
-        self.image = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Image Path (Enter for none) \x1b[38;5;9m->\x1b[0m ").strip()
+        self.image = input("\x1b[38;5;51m[?]\x1b[0m Image Path \x1b[38;5;8m(Enter for none)\x1b[0m \x1b[38;5;51m→\x1b[0m ").strip()
         if self.image != "" and not os.path.exists(self.image):
             logging.info("File not found \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (self.image))
             sys.exit()
             
-        print()
+        print("\n\x1b[38;5;46m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m")
+        print("\x1b[38;5;226m⚡ Starting bot... Please wait...\x1b[0m")
+        print("\x1b[38;5;46m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n")
 
     def stop(self):
         process = psutil.Process(os.getpid())
