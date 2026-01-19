@@ -397,8 +397,9 @@ class Discord(object):
                     self.stop()
 
 if __name__ == "__main__":
-    client = Discord()
     try:
+        client = Discord()
         asyncio.run(client.start())
     except KeyboardInterrupt:
+        print("\n\n\x1b[38;5;196m[!] \x1b[38;5;255mExiting... Bye!\x1b[0m")
         sys.exit()
