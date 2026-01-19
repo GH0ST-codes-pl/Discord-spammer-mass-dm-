@@ -34,6 +34,8 @@
 - 🛡️ **Rate Limit Protection** - Random delays to prevent account bans
 - 🔄 **Multi-Token Support** - Use multiple accounts simultaneously
 - 🎲 **Human-like Behavior** - Random delays simulate natural user activity
+- 👥 **Target Multiple IDs** - Send messages to a specific list of User IDs (from file or console)
+- 📜 **Message Content Fetch** - Use content from an existing Discord message instead of manual input
 
 ---
 
@@ -277,9 +279,13 @@ The bot will ask you for the following information:
 [1] Single User    - Send messages to a specific user ID
 [2] Mass DM        - Send messages to all members in a server
 [3] Mass Channel   - Send messages to all channels in a server
+[4] Target Multiple IDs - Send messages to a specific list of User IDs
 ```
 
 #### 2. **Target Configuration**
+
+**For Mode 4 (Target Multiple IDs):**
+- `User IDs`: Enter IDs separated by commas (e.g. `ID1,ID2,ID3`) OR a path to a file (e.g. `data/users.txt`)
 
 **For Mode 1 (Single User):**
 - `User ID`: The Discord user ID to target
@@ -298,6 +304,9 @@ The bot will ask you for the following information:
 - `Delay`: Time between messages in seconds (recommended: 3-5s)
   - Default: 3 seconds
   - Lower values = higher ban risk
+- `Use Message ID`: Choose `y` to fetch content from an existing message
+  - `Message Channel ID`: The ID of the channel where the message is
+  - `Message ID`: The ID of the message to fetch content from
 - `Image Path`: Path to an image file (optional, press Enter to skip)
 
 ### Example Usage
@@ -433,6 +442,8 @@ If you find this project useful, please consider giving it a star ⭐
 - 🛡️ **Ochrona przed Rate Limit** - Losowe opóźnienia zapobiegają blokowaniu konta
 - 🔄 **Wsparcie Wielu Tokenów** - Używaj wielu kont jednocześnie
 - 🎲 **Zachowanie Jak Człowiek** - Losowe opóźnienia symulują naturalną aktywność
+- 👥 **Targetowanie Wielu ID** - Wysyłaj wiadomości do konkretnej listy ID (z pliku lub konsoli)
+- 📜 **Pobieranie Treści Wiadomości** - Użyj treści z istniejącej wiadomości Discord
 
 ---
 
@@ -676,9 +687,13 @@ Bot zapyta Cię o następujące informacje:
 [1] Single User    - Wysyłaj wiadomości do konkretnego ID użytkownika
 [2] Mass DM        - Wysyłaj wiadomości do wszystkich członków serwera
 [3] Mass Channel   - Wysyłaj wiadomości na wszystkie kanały serwera
+[4] Target Multiple IDs - Wysyłaj wiadomości do konkretnej listy ID
 ```
 
 #### 2. **Konfiguracja Celu**
+
+**Dla Trybu 4 (Targetowanie Wielu ID):**
+- `User IDs`: Wpisz ID oddzielone przecinkami (np. `ID1,ID2,ID3`) LUB ścieżkę do pliku (np. `data/users.txt`)
 
 **Dla Trybu 1 (Single User):**
 - `User ID`: ID użytkownika Discord do targetowania
@@ -697,6 +712,9 @@ Bot zapyta Cię o następujące informacje:
 - `Delay`: Czas między wiadomościami w sekundach (zalecane: 3-5s)
   - Domyślnie: 3 sekundy
   - Niższe wartości = wyższe ryzyko bana
+- `Use Message ID`: Wybierz `y`, aby pobrać treść z istniejącej wiadomości
+  - `Message Channel ID`: ID kanału, na którym znajduje się wiadomość
+  - `Message ID`: ID wiadomości, z której ma zostać pobrana treść
 - `Image Path`: Ścieżka do pliku obrazu (opcjonalne, naciśnij Enter aby pominąć)
 
 ### Przykład Użycia

@@ -42,7 +42,9 @@ def print_banner():
 \x1b[38;5;129m║                                                                       ║
 \x1b[38;5;165m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Single User DM    \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Mass DM    \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Mass Channel      \x1b[38;5;165m║
 \x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Image Support     \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Rate Limit Protection           \x1b[38;5;201m║
-\x1b[38;5;196m╚═══════════════════════════════════════════════════════════════════════╝\x1b[0m
+\x1b[38;5;196m╚═══════════════════════════════════════════════════════════════════════╝
+    [✓] Multi-User DM    [✓] Message Content Fetch
+\x1b[0m
 """
     print(banner)
     print("\x1b[38;5;208m⚠️  WARNING: \x1b[38;5;255mSelfbots are against Discord ToS. Use at your own risk!\x1b[0m")
@@ -82,18 +84,20 @@ class Discord(object):
         print("\x1b[38;5;51m╚════════════════════════════════════╝\x1b[0m\n")
         print("\x1b[38;5;46m  [1]\x1b[0m 🎯 Single User DM")
         print("\x1b[38;5;201m  [2]\x1b[0m 📢 Mass DM")
-        print("\x1b[38;5;196m  [3]\x1b[0m 📺 Mass Channel\n")
+        print("\x1b[38;5;196m  [3]\x1b[0m 📺 Mass Channel")
+        print("\x1b[38;5;51m  [4]\x1b[0m 👥 Target Multiple IDs\n")
         self.mode = input("\x1b[38;5;51m[?]\x1b[0m Choice \x1b[38;5;51m→\x1b[0m ")
-        if self.mode not in ["1", "2", "3"]:
+        if self.mode not in ["1", "2", "3", "4"]:
             sys.exit()
         
         if self.mode == "1":
             self.user_id = input("\x1b[38;5;51m[?]\x1b[0m User ID \x1b[38;5;51m→\x1b[0m ")
+        elif self.mode == "4":
+            self.user_ids = input("\x1b[38;5;51m[?]\x1b[0m User IDs (comma separated or file.txt) \x1b[38;5;51m→\x1b[0m ")
         else:
             server_input = input("\x1b[38;5;51m[?]\x1b[0m Invite or Guild ID \x1b[38;5;51m→\x1b[0m ")
             if server_input.isdigit():
                  self.guild_id = server_input
-                 # Only ask for Channel ID if Mode 2 (Mass DM requires it for scraping members)
                  if self.mode == "2":
                      self.channel_id = input("\x1b[38;5;51m[?]\x1b[0m Channel ID \x1b[38;5;51m→\x1b[0m ")
                  else:
@@ -111,7 +115,13 @@ class Discord(object):
         else:
             self.amount = 1
 
-        self.message = input("\x1b[38;5;51m[?]\x1b[0m Message \x1b[38;5;51m→\x1b[0m ").replace("\\n", "\n")
+        self.use_msg_id = input("\x1b[38;5;51m[?]\x1b[0m Use Message ID for content? (y/n) \x1b[38;5;51m→\x1b[0m ").lower() == "y"
+        if self.use_msg_id:
+            self.fetch_channel_id = input("\x1b[38;5;51m[?]\x1b[0m Message Channel ID \x1b[38;5;51m→\x1b[0m ")
+            self.fetch_message_id = input("\x1b[38;5;51m[?]\x1b[0m Message ID \x1b[38;5;51m→\x1b[0m ")
+            self.message = "" # Will be fetched later
+        else:
+            self.message = input("\x1b[38;5;51m[?]\x1b[0m Message \x1b[38;5;51m→\x1b[0m ").replace("\\n", "\n")
         try:
             self.delay = float(input("\x1b[38;5;51m[?]\x1b[0m Delay \x1b[38;5;226m(recommended: 3-5s)\x1b[0m \x1b[38;5;51m→\x1b[0m "))
         except Exception:
@@ -170,6 +180,21 @@ class Discord(object):
 
         self.cached_headers[token] = headers
         return headers
+
+    async def fetch_message_content(self, token, channel_id, message_id):
+        try:
+            headers = await self.headers(token)
+            async with ClientSession(headers=headers) as client:
+                async with client.get(f"https://discord.com/api/v9/channels/{channel_id}/messages/{message_id}") as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        return data.get("content", "")
+                    else:
+                        logging.info(f"Failed to fetch message {message_id} (Status: {response.status})")
+                        return None
+        except Exception as e:
+            logging.info(f"Error fetching message: {e}")
+            return None
 
     async def login(self, token):
         try:
@@ -304,7 +329,17 @@ class Discord(object):
                     
         if len(self.tokens) == 0: self.stop()
 
-        if self.mode != "1":
+        if self.use_msg_id and self.message == "":
+            logging.info("Fetching message content...")
+            content = await self.fetch_message_content(self.tokens[0], self.fetch_channel_id, self.fetch_message_id)
+            if content:
+                self.message = content
+                logging.info(f"Successfully fetched message content: \x1b[38;5;226m{self.message[:50]}...\x1b[0m")
+            else:
+                logging.info("Could not fetch message content. Exiting.")
+                self.stop()
+
+        if self.mode != "1" and self.mode != "4":
             print()
             if self.invite:
                 logging.info("Joining server.")
@@ -333,8 +368,15 @@ class Discord(object):
                  self.targets = self.targets * self.amount
                  logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m channels (Multipier: %s)" % (len(self.targets) // self.amount, self.amount))
             else:
-                 self.targets = scraper.fetch()
-                 logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m members" % (len(self.targets)))
+                  self.targets = scraper.fetch()
+                  logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m members" % (len(self.targets)))
+        elif self.mode == "4":
+            if os.path.exists(self.user_ids):
+                with open(self.user_ids, "r") as f:
+                    self.targets = [line.strip() for line in f if line.strip()]
+            else:
+                self.targets = [i.strip() for i in self.user_ids.split(",") if i.strip()]
+            logging.info("Successfully loaded \x1b[38;5;9m%s\x1b[0m user IDs" % (len(self.targets)))
         else:
             self.targets = [self.user_id] * self.amount
 

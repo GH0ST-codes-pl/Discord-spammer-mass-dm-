@@ -1,0 +1,4 @@
+# Put Discord User IDs here, one per line
+# Example:
+# 123456789012345678
+# 987654321098765432
