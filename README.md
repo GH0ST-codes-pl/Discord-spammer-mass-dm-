@@ -8,6 +8,8 @@
 
 ### 🚀 Made by [GH0ST-codes-pl](https://github.com/GH0ST-codes-pl)
 
+![CLI Preview](assets/cli_preview.png)
+
 *A powerful multi-functional Discord selfbot for automated direct messaging*
 
 [English](#-english) | [Polski](#-polski)
