@@ -1,6 +1,4 @@
 import os
-
-
 import sys
 import json
 import time
@@ -34,6 +32,7 @@ class Discord(object):
         self.guild_name = None
         self.guild_id = None
         self.channel_id = None
+        self.invite = None
 
         try:
             for line in open("data/tokens.txt"):
@@ -48,16 +47,35 @@ class Discord(object):
         
         print("\x1b[38;5;9m[1]\x1b[0m Single User")
         print("\x1b[38;5;9m[2]\x1b[0m Mass DM")
-        self.mode = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Option \x1b[38;5;9m->\x1b[0m ")
-
+        print("\x1b[38;5;9m[3]\x1b[0m Mass Channel")
+        self.mode = input("\n\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Choice \x1b[38;5;9m->\x1b[0m ")
+        if self.mode not in ["1", "2", "3"]:
+            sys.exit()
+        
         if self.mode == "1":
             self.user_id = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m User ID \x1b[38;5;9m->\x1b[0m ")
+        else:
+            server_input = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Invite or Guild ID \x1b[38;5;9m->\x1b[0m ")
+            if server_input.isdigit():
+                 self.guild_id = server_input
+                 # Only ask for Channel ID if Mode 2 (Mass DM requires it for scraping members)
+                 if self.mode == "2":
+                     self.channel_id = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Channel ID \x1b[38;5;9m->\x1b[0m ")
+                 else:
+                     self.channel_id = None
+                 self.invite = None
+            else:
+                 self.invite = server_input
+
+        # Ask for amount for Single User (1) AND Mass Channel (3)
+        if self.mode in ["1", "3"]:
             try:
                 self.amount = int(input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Amount \x1b[38;5;9m->\x1b[0m "))
             except Exception:
                 self.amount = 1
         else:
-            self.invite = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Invite \x1b[38;5;9m->\x1b[0m ")
+            self.amount = 1
+
         self.message = input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Message \x1b[38;5;9m->\x1b[0m ").replace("\\n", "\n")
         try:
             self.delay = float(input("\x1b[38;5;9m[\x1b[0m?\x1b[38;5;9m]\x1b[0m Delay \x1b[38;5;9m->\x1b[0m "))
@@ -87,8 +105,12 @@ class Discord(object):
         async with ClientSession() as client:
             async with client.get("https://discord.com/app") as response:
                 cookies = str(response.cookies)
-                dcfduid = cookies.split("dcfduid=")[1].split(";")[0]
-                sdcfduid = cookies.split("sdcfduid=")[1].split(";")[0]
+                try:
+                    dcfduid = cookies.split("dcfduid=")[1].split(";")[0]
+                    sdcfduid = cookies.split("sdcfduid=")[1].split(";")[0]
+                except:
+                    dcfduid = ""
+                    sdcfduid = ""
         
         headers = {
             "Authorization": token,
@@ -102,38 +124,37 @@ class Discord(object):
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-origin",
             "referer": "https://discord.com/channels/@me",
-            "TE": "Trailers",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9001 Chrome/83.0.4103.122 Electron/9.3.5 Safari/537.36",
-            "X-Super-Properties": "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiRGlzY29yZCBDbGllbnQiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfdmVyc2lvbiI6IjEuMC45MDAxIiwib3NfdmVyc2lvbiI6IjEwLjAuMTkwNDIiLCJvc19hcmNoIjoieDY0Iiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiY2xpZW50X2J1aWxkX251bWJlciI6ODMwNDAsImNsaWVudF9ldmVudF9zb3VyY2UiOm51bGx9"
+            "te": "trailers",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9015 Chrome/108.0.5359.215 Electron/22.3.12 Safari/537.36",
+            "x-debug-options": "bugReporterEnabled",
+            "x-discord-locale": "en-US",
+            "x-super-properties": "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiRGlzY29yZCBDbGllbnQiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfdmVyc2lvbiI6IjEuMC45MDE1Iiwib3NfdmVyc2lvbiI6IjEwLjAuMTkwNDUiLCJvc19hcmNoIjoieDY0Iiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV09XNjQpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIGRpc2NvcmQvMS4wLjkwMTUgQ2hyb21lLzEwOC4wLjUzNTkuMjE1IEVsZWN0cm9uLzIyLjMuMTIgU2FmYXJpLzUzNy4zNiIsImJyb3dzZXJfdmVyc2lvbiI6IjIyLjMuMTIiLCJjbGllbnRfYnVpbGRfbnVtYmVyIjoyMTYzNjQsIm5hdGl2ZV9idWlsZF9udW1iZXIiOjM0OTk4LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="
         }
+
         self.cached_headers[token] = headers
         return headers
 
-    async def login(self, token: str):
+    async def login(self, token):
         try:
             headers = await self.headers(token)
             async with ClientSession(headers=headers) as client:
-                async with client.get("https://discord.com/api/v9/users/@me/library") as response:
+                async with client.get("https://discord.com/api/v9/users/@me") as response:
                     if response.status == 200:
-                        logging.info("Successfully logged in \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                    if response.status == 401:
+                        logging.info("Valid token \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
+                    elif response.status == 401:
                         logging.info("Invalid account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
                         self.tokens.remove(token)
-                    if response.status == 403:
+                    elif response.status == 403:
                         logging.info("Locked account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
                         self.tokens.remove(token)
-                    if response.status == 429:
-                        logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        time.sleep(self.delay)
-                        await self.login(token)
         except Exception:
-            await self.login(token)
+            pass
 
-    async def join(self, token: str):
+    async def join(self, token):
         try:
             headers = await self.headers(token)
             async with ClientSession(headers=headers) as client:
-                async with client.post("https://discord.com/api/v9/invites/%s" % (self.invite), json={}) as response:
+                async with client.post("https://discord.com/api/v9/invites/%s" % (self.invite)) as response:
                     json = await response.json()
                     if response.status == 200:
                         self.guild_name = json["guild"]["name"]
@@ -148,33 +169,29 @@ class Discord(object):
                         self.tokens.remove(token)
                     elif response.status == 429:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        time.sleep(self.delay)
-                        self.tokens.remove(token)
-                    else:
-                        self.tokens.remove(token)
         except Exception:
-            await self.join(token)
+            pass
 
-    async def create_dm(self, token: str, user: str):
+    async def create_dm(self, token, user_id):
         try:
             headers = await self.headers(token)
             async with ClientSession(headers=headers) as client:
-                async with client.post("https://discord.com/api/v9/users/@me/channels", json={"recipients": [user]}) as response:
+                async with client.post("https://discord.com/api/v9/users/@me/channels", json={"recipients": [user_id]}) as response:
                     json = await response.json()
                     if response.status == 200:
-                        logging.info("Successfully created direct message with %s \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (json["recipients"][0]["username"], token[:59]))
                         return json["id"]
                     elif response.status == 401:
                         logging.info("Invalid account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
                         self.tokens.remove(token)
                         return False
                     elif response.status == 403:
-                        logging.info("Cant message user \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
+                        logging.info("Locked account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
                         self.tokens.remove(token)
+                        return False
                     elif response.status == 429:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
                         time.sleep(self.delay)
-                        return await self.create_dm(token, user)
+                        return await self.create_dm(token, user_id)
                     else:
                         return False
         except Exception:
@@ -227,6 +244,11 @@ class Discord(object):
         if response == False:
             return await self.send(random.choice(self.tokens), user)
 
+    async def send_channel(self, token: str, channel_id: str):
+        response = await self.direct_message(token, channel_id)
+        if response == False:
+            return await self.send_channel(random.choice(self.tokens), channel_id)
+
     async def start(self):
         if len(self.tokens) == 0:
             logging.info("No tokens loaded.")
@@ -243,16 +265,19 @@ class Discord(object):
 
         if self.mode != "1":
             print()
-            logging.info("Joining server.")
-            print()
+            if self.invite:
+                logging.info("Joining server.")
+                print()
 
-            async with TaskPool(1_000) as pool:
-                for token in self.tokens:
-                    if len(self.tokens) != 0:
-                        await pool.put(self.join(token))
-                        if self.delay != 0: await asyncio.sleep(self.delay)
-                    else:
-                        self.stop()
+                async with TaskPool(1_000) as pool:
+                    for token in self.tokens:
+                        if len(self.tokens) != 0:
+                            await pool.put(self.join(token))
+                            if self.delay != 0: await asyncio.sleep(self.delay)
+                        else:
+                            self.stop()
+            else:
+                 logging.info("Skipping join (Guild ID provided).")
             
             if len(self.tokens) == 0: self.stop()
 
@@ -261,21 +286,30 @@ class Discord(object):
                 guild_id=self.guild_id,
                 channel_id=self.channel_id
             )
-            self.users = scraper.fetch()
+            
+            if self.mode == "3":
+                 self.targets = scraper.fetch_channels()
+                 self.targets = self.targets * self.amount
+                 logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m channels (Multipier: %s)" % (len(self.targets) // self.amount, self.amount))
+            else:
+                 self.targets = scraper.fetch()
+                 logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m members" % (len(self.targets)))
         else:
-            self.users = [self.user_id] * self.amount
+            self.targets = [self.user_id] * self.amount
 
         print()
-        logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m members" % (len(self.users)))
         logging.info("Sending messages.")
         print()
 
         if len(self.tokens) == 0: self.stop()
 
         async with TaskPool(1_000) as pool:
-            for user in self.users:
+            for target in self.targets:
                 if len(self.tokens) != 0:
-                    await pool.put(self.send(random.choice(self.tokens), user))
+                    if self.mode == "3":
+                        await pool.put(self.send_channel(random.choice(self.tokens), target))
+                    else:
+                        await pool.put(self.send(random.choice(self.tokens), target))
                     if self.delay != 0: await asyncio.sleep(self.delay)
                 else:
                     self.stop()

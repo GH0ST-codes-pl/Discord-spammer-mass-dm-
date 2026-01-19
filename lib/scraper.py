@@ -44,3 +44,12 @@ class Scraper(object):
             if len(self.scraped) == 0:
                 return self.fetch()
             return self.scraped
+
+    def fetch_channels(self):
+        try:
+            client = discum.Client(token=self.token, log=False)
+            channels = client.getGuildChannels(self.guild_id).json()
+            extracted_channels = [c['id'] for c in channels if c['type'] in [0, 5]]
+            return extracted_channels
+        except Exception as e:
+            return []
