@@ -9,7 +9,7 @@ import asyncio
 from tasksio import TaskPool
 from datetime import datetime
 from lib.scraper import Scraper
-from lib.utils import parse_spintax, load_proxies, load_blacklist, resolve_placeholders
+from lib.utils import parse_spintax, load_proxies, load_blacklist, resolve_placeholders, get_random_ua, get_fingerprint, get_sec_headers
 from aiohttp import ClientSession, FormData, BasicAuth
 
 logging.basicConfig(
@@ -36,7 +36,7 @@ def print_banner():
 \x1b[38;5;45m║           ██║ ╚═╝ ██║██║  ██║███████║███████║    ██████╔╝██║ ╚═╝ ██║ ║
 \x1b[38;5;39m║           ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝    ╚═════╝ ╚═╝     ╚═╝ ║
 \x1b[38;5;33m║                                                                       ║
-\x1b[38;5;27m║                    \x1b[1m\x1b[38;5;201m⚡ MASS DM ADVERTISER V2 ⚡\x1b[0m                     ║
+\x1b[38;5;27m║                \x1b[1m\x1b[38;5;201m⚡ MASS DM ADVERTISER V2.5 STEALTH ⚡\x1b[0m                ║
 \x1b[38;5;21m║                                                                       ║
 \x1b[38;5;57m║              \x1b[38;5;255m🚀 Created by: \x1b[1m\x1b[38;5;196mGH0ST-codes-pl\x1b[0m\x1b[38;5;57m 🚀                  ║
 \x1b[38;5;93m║          \x1b[38;5;255m🔗 GitHub: \x1b[4m\x1b[38;5;51mgithub.com/GH0ST-codes-pl\x1b[0m\x1b[38;5;93m 🔗             ║
@@ -44,6 +44,7 @@ def print_banner():
 \x1b[38;5;165m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Mass DM & Scraper      \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Proxy support (SOCKS/HTTP)    \x1b[38;5;165m║
 \x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Spintax & Personalize  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Webhook Remote Logging        \x1b[38;5;201m║
 \x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m JSON Embed Support     \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Advanced Target Filters       \x1b[38;5;201m║
+\x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Advanced Stealth Fix   \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Typing Simulation             \x1b[38;5;201m║
 \x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Real-time Statistics   \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Blacklist & Safety            \x1b[38;5;201m║
 \x1b[38;5;196m╚═══════════════════════════════════════════════════════════════════════╝\x1b[0m
 """
@@ -186,10 +187,14 @@ class Discord(object):
                     dcfduid = ""
                     sdcfduid = ""
         
+        ua = get_random_ua()
+        fingerprint = get_fingerprint(ua)
+        sec_headers = get_sec_headers(ua)
+        
         headers = {
             "Authorization": token,
             "accept": "*/*",
-            "accept-language": "en-US",
+            "accept-language": "en-US,en;q=0.9",
             "connection": "keep-alive",
             "cookie": "__dcfduid=%s; __sdcfduid=%s; locale=en-US" % (dcfduid, sdcfduid),
             "DNT": "1",
@@ -198,12 +203,12 @@ class Discord(object):
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-origin",
             "referer": "https://discord.com/channels/@me",
-            "te": "trailers",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9015 Chrome/108.0.5359.215 Electron/22.3.12 Safari/537.36",
+            "user-agent": ua,
             "x-debug-options": "bugReporterEnabled",
             "x-discord-locale": "en-US",
-            "x-super-properties": "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiRGlzY29yZCBDbGllbnQiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfdmVyc2lvbiI6IjEuMC45MDE1Iiwib3NfdmVyc2lvbiI6IjEwLjAuMTkwNDUiLCJvc19hcmNoIjoieDY0Iiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV09XNjQpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIGRpc2NvcmQvMS4wLjkwMTUgQ2hyb21lLzEwOC4wLjUzNTkuMjE1IEVsZWN0cm9uLzIyLjMuMTIgU2FmYXJpLzUzNy4zNiIsImJyb3dzZXJfdmVyc2lvbiI6IjIyLjMuMTIiLCJjbGllbnRfYnVpbGRfbnVtYmVyIjoyMTYzNjQsIm5hdGl2ZV9idWlsZF9udW1iZXIiOjM0OTk4LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="
+            "x-super-properties": fingerprint
         }
+        headers.update(sec_headers)
 
         self.cached_headers[token] = headers
         return headers
@@ -310,10 +315,24 @@ class Discord(object):
         except Exception:
             return await self.create_dm(token, user_id)
 
+    async def typing(self, token, channel_id):
+        try:
+            headers = await self.headers(token)
+            session, proxy = self.get_session(headers)
+            async with session as client:
+                await client.post(f"https://discord.com/api/v9/channels/{channel_id}/typing", proxy=proxy)
+        except:
+            pass
+
     async def direct_message(self, token: str, channel: str, user_data=None):
         try:
-            # Add random delay before sending message
-            await asyncio.sleep(random.uniform(1.5, 4.0))
+            # Add random delay before sending message - increased for stealth
+            await asyncio.sleep(random.uniform(2.5, 6.0))
+            
+            # Simulate typing for 1.5 - 3.5 seconds
+            await self.typing(token, channel)
+            await asyncio.sleep(random.uniform(1.5, 3.5))
+            
             headers = await self.headers(token)
             
             # Resolve Spintax and Placeholders
@@ -484,7 +503,10 @@ class Discord(object):
                     # Log real-time stats
                     print(f"\r\x1b[38;5;46m[STATS]\x1b[0m Sent: {self.stats['sent']} | Failed: {self.stats['failed']} | RateLimited: {self.stats['ratelimited']}", end="")
                     
-                    if self.delay != 0: await asyncio.sleep(self.delay)
+                    if self.delay != 0:
+                        # Add jitter to the delay to appear more human-like (between -0.5 and +1.5 seconds)
+                        jitter = random.uniform(-0.5, 1.5)
+                        await asyncio.sleep(max(0.1, self.delay + jitter))
                 else:
                     self.stop()
         

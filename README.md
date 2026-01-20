@@ -8,9 +8,9 @@
 
 ### 🚀 Made by [GH0ST-codes-pl](https://github.com/GH0ST-codes-pl)
 
-![CLI Preview](assets/cli_preview.png)
+![CLI Preview](preview.png)
 
-*A powerful multi-functional Discord selfbot for automated direct messaging*
+*A powerful multi-functional Discord selfbot for automated direct messaging with Advanced Stealth (V2.5)*
 
 [English](#-english) | [Polski](#-polski)
 
@@ -32,6 +32,7 @@
 - 🖼️ **Image Support** - Attach images to your messages
 - ⚡ **Header Caching** - Optimized performance with intelligent caching
 - 🛡️ **Advanced Anti-Ban** - Random delays, **Proxy support**, and **Spintax** (`{hi|hello}`)
+- 🔒 **Advanced Stealth (V2.5)** - **Typing simulation** and **Browser fingerprinting**
 - 🔄 **Multi-Token Support** - Use multiple accounts simultaneously
 - 🎲 **Human-like Behavior** - Random delays and **Custom Status (Rich Presence)**
 - 👥 **Target Multiple IDs** - Send messages to a specific list of User IDs
@@ -41,6 +42,22 @@
 - 🖤 **Blacklist** - Skip specific users or server IDs automatically
 - 🔍 **Filtering** - Scrape only Online/DND/Idle users and exclude bots
 - ✉️ **Embed Support** - Send professional looking Embeds via JSON
+
+---
+
+### 🛡️ Recommended Settings (Safety First)
+
+To minimize the risk of being blocked by Discord, follow these guidelines for each mode:
+
+| Mode | Recommended Delay | Recommended Account Count | Stealth Settings |
+| :--- | :--- | :--- | :--- |
+| 🎯 **Single User DM** | 3.0s - 5.0s | 1 token | Use Spintax & Personalization |
+| 📢 **Mass DM** | 10.0s - 15.0s | 5+ tokens | **Typing: ON**, Proxy: ON |
+| 📺 **Mass Channel** | 5.0s - 8.0s | 1-2 tokens | Custom status enabled |
+| 👥 **Multiple IDs** | 10.0s+ | 3+ tokens | Randomized headers enabled |
+
+> [!IMPORTANT]
+> Always use **Proxies** and **Spintax** for Mass DM campaigns. Avoid sending the exact same message hundreds of times.
 
 ---
 
@@ -451,6 +468,7 @@ If you find this project useful, please consider giving it a star ⭐
 - 🖼️ **Obsługa Obrazów** - Dołączaj obrazy do wiadomości
 - ⚡ **Cache Nagłówków** - Zoptymalizowana wydajność
 - 🛡️ **Zaawansowany Anti-Ban** - Losowe opóźnienia, **Obsługa Proxy** i **Spintax** (`{cześć|siema}`)
+- 🔒 **Zaawansowany Stealth (V2.5)** - **Symulacja pisania** i **Fingerprinting** przeglądarki
 - 🔄 **Wsparcie Wielu Tokenów** - Używaj wielu kont jednocześnie
 - 🎲 **Zachowanie Jak Człowiek** - Losowe opóźnienia i **Własny Status (Rich Presence)**
 - 👥 **Targetowanie Wielu ID** - Wysyłaj wiadomości do konkretnej listy ID
@@ -460,6 +478,22 @@ If you find this project useful, please consider giving it a star ⭐
 - 🖤 **Czarna Lista** - Automatycznie omijaj konkretne osoby lub serwery
 - 🔍 **Filtrowanie** - Scrapuj tylko osoby Online/Zaraz Wracam i omijaj boty
 - ✉️ **Wsparcie Embedów** - Wysyłaj profesjonalne Embedy przez format JSON
+
+---
+
+### 🛡️ Zalecane Ustawienia (Bezpieczeństwo)
+
+Aby zminimalizować ryzyko blokady konta przez Discord, stosuj się do poniższych zaleceń dla każdego trybu:
+
+| Tryb | Zalecany Delay | Zalecana Ilość Kont | Ustawienia Stealth |
+| :--- | :--- | :--- | :--- |
+| 🎯 **Single User DM** | 3.0s - 5.0s | 1 token | Używaj Spintax i Personalizacji |
+| 📢 **Mass DM** | 10.0s - 15.0s | 5+ tokenów | **Pisanie: WŁ**, Proxy: WŁ |
+| 📺 **Mass Channel** | 5.0s - 8.0s | 1-2 tokeny | Włączony Custom Status |
+| 👥 **Wybór wielu ID** | 10.0s+ | 3+ tokeny | Włączone dynamiczne nagłówki |
+
+> [!IMPORTANT]
+> Zawsze używaj **Proxy** i **Spintax** przy masowych kampaniach. Unikaj wysyłania tej samej wiadomości setki razy pod rząd.
 
 ---
 
