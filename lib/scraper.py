@@ -33,17 +33,34 @@ class Scraper(object):
         except Exception:
             return
     
-    def fetch(self):
+    def fetch(self, filter_online=False, exclude_bots=True):
         try:
             self.scrape()
-            if len(self.scraped) == 0:
-                return self.fetch()
-            return self.scraped
-        except Exception:
-            self.scrape()
-            if len(self.scraped) == 0:
-                return self.fetch()
-            return self.scraped
+            if not self.scraped:
+                return []
+            
+            filtered = []
+            # discum members can be a dict or list depending on session state
+            # but we collected them into a list in self.scrape()
+            for item in self.scraped:
+                # If we have full user objects
+                if isinstance(item, dict):
+                    user = item
+                    if exclude_bots and user.get('bot'):
+                        continue
+                    if filter_online:
+                        presence = user.get('presence', {})
+                        status = presence.get('status', 'offline')
+                        if status == 'offline':
+                            continue
+                    filtered.append(user)
+                else:
+                    # If we only have IDs (from generic scraping or fallback)
+                    filtered.append({'id': item, 'username': 'Unknown'})
+            
+            return filtered
+        except Exception as e:
+            return []
 
     def fetch_channels(self):
         try:

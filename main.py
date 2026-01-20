@@ -9,7 +9,8 @@ import asyncio
 from tasksio import TaskPool
 from datetime import datetime
 from lib.scraper import Scraper
-from aiohttp import ClientSession, FormData
+from lib.utils import parse_spintax, load_proxies, load_blacklist, resolve_placeholders
+from aiohttp import ClientSession, FormData, BasicAuth
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,7 +19,7 @@ logging.basicConfig(
 )
 
 def print_banner():
-    """Display colorful ASCII banner with author credits"""
+    """Display colorful ASCII banner with author credits and feature list"""
     banner = """
 \x1b[38;5;196m╔═══════════════════════════════════════════════════════════════════════╗
 \x1b[38;5;202m║  ██████╗ ██╗███████╗ ██████╗ ██████╗ ██████╗ ██████╗                ║
@@ -35,14 +36,15 @@ def print_banner():
 \x1b[38;5;45m║           ██║ ╚═╝ ██║██║  ██║███████║███████║    ██████╔╝██║ ╚═╝ ██║ ║
 \x1b[38;5;39m║           ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝    ╚═════╝ ╚═╝     ╚═╝ ║
 \x1b[38;5;33m║                                                                       ║
-\x1b[38;5;27m║                    \x1b[1m\x1b[38;5;201m⚡ MASS DM ADVERTISER ⚡\x1b[0m                      ║
+\x1b[38;5;27m║                    \x1b[1m\x1b[38;5;201m⚡ MASS DM ADVERTISER V2 ⚡\x1b[0m                     ║
 \x1b[38;5;21m║                                                                       ║
 \x1b[38;5;57m║              \x1b[38;5;255m🚀 Created by: \x1b[1m\x1b[38;5;196mGH0ST-codes-pl\x1b[0m\x1b[38;5;57m 🚀                  ║
 \x1b[38;5;93m║          \x1b[38;5;255m🔗 GitHub: \x1b[4m\x1b[38;5;51mgithub.com/GH0ST-codes-pl\x1b[0m\x1b[38;5;93m 🔗             ║
 \x1b[38;5;129m║                                                                       ║
-\x1b[38;5;165m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Single User DM    \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Mass DM    \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Mass Channel      \x1b[38;5;165m║
-\x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Multi-User DM     \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Message Content Fetch           \x1b[38;5;201m║
-\x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Image Support     \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Rate Limit Protection           \x1b[38;5;201m║
+\x1b[38;5;165m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Mass DM & Scraper      \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Proxy support (SOCKS/HTTP)    \x1b[38;5;165m║
+\x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Spintax & Personalize  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Webhook Remote Logging        \x1b[38;5;201m║
+\x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m JSON Embed Support     \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Advanced Target Filters       \x1b[38;5;201m║
+\x1b[38;5;201m║  \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Real-time Statistics   \x1b[38;5;226m[\x1b[38;5;46m✓\x1b[38;5;226m]\x1b[38;5;255m Blacklist & Safety            \x1b[38;5;201m║
 \x1b[38;5;196m╚═══════════════════════════════════════════════════════════════════════╝\x1b[0m
 """
     print(banner)
@@ -77,6 +79,15 @@ class Discord(object):
             sys.exit()
 
         logging.info("Successfully loaded \x1b[38;5;9m%s\x1b[0m token(s)\n" % (len(self.tokens)))
+        
+        self.proxies = load_proxies()
+        self.blacklist = load_blacklist()
+        self.stats = {"sent": 0, "failed": 0, "ratelimited": 0}
+        self.webhook_url = None
+        
+        if os.path.exists("data/webhook.txt"):
+            with open("data/webhook.txt", "r") as f:
+                self.webhook_url = f.read().strip()
         
         print("\x1b[38;5;51m╔════════════════════════════════════╗\x1b[0m")
         print("\x1b[38;5;51m║\x1b[0m         \x1b[1m\x1b[38;5;226mSELECT MODE\x1b[0m              \x1b[38;5;51m║\x1b[0m")
@@ -130,6 +141,10 @@ class Discord(object):
         if self.image != "" and not os.path.exists(self.image):
             logging.info("File not found \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (self.image))
             sys.exit()
+
+        self.filter_online = input("\x1b[38;5;51m[?]\x1b[0m Filter only Online/DND/Idle? (y/n) \x1b[38;5;51m→\x1b[0m ").lower() == "y"
+        self.exclude_bots = input("\x1b[38;5;51m[?]\x1b[0m Exclude bots? (y/n) \x1b[38;5;51m→\x1b[0m ").lower() != "n"
+        self.status_text = input("\x1b[38;5;51m[?]\x1b[0m Custom Status (Enter for none) \x1b[38;5;51m→\x1b[0m ").strip()
             
         print("\n\x1b[38;5;46m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m")
         print("\x1b[38;5;226m⚡ Starting bot... Please wait...\x1b[0m")
@@ -143,6 +158,19 @@ class Discord(object):
         date = datetime.now()
         unixts = time.mktime(date.timetuple())
         return str((int(unixts)*1000-1420070400000)*4194304)
+
+    def get_session(self, headers):
+        if self.proxies:
+            proxy = random.choice(self.proxies)
+            return ClientSession(headers=headers, connector=None), proxy
+        return ClientSession(headers=headers), None
+
+    async def log_to_webhook(self, message):
+        if not self.webhook_url:
+            return
+        async with ClientSession() as session:
+            payload = {"content": message}
+            await session.post(self.webhook_url, json=payload)
 
     async def headers(self, token):
         if token in self.cached_headers:
@@ -198,17 +226,35 @@ class Discord(object):
     async def login(self, token):
         try:
             headers = await self.headers(token)
-            async with ClientSession(headers=headers) as client:
-                async with client.get("https://discord.com/api/v9/users/@me") as response:
+            session, proxy = self.get_session(headers)
+            async with session as client:
+                async with client.get("https://discord.com/api/v9/users/@me", proxy=proxy) as response:
                     if response.status == 200:
-                        logging.info("Valid token \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
+                        data = await response.json()
+                        user_tag = f"{data['username']}#{data.get('discriminator', '0000')}"
+                        logging.info("Valid token \x1b[38;5;46m[✓]\x1b[0m \x1b[38;5;255m%s\x1b[0m \x1b[38;5;8m(%s...)\x1b[0m" % (user_tag, token[:20]))
+                        return True
                     elif response.status == 401:
-                        logging.info("Invalid account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        self.tokens.remove(token)
+                        logging.info("Invalid account \x1b[38;5;196m[✗]\x1b[0m \x1b[38;5;8m(%s...)\x1b[0m" % (token[:20]))
+                        try: self.tokens.remove(token)
+                        except ValueError: pass
                     elif response.status == 403:
-                        logging.info("Locked account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        self.tokens.remove(token)
-        except Exception:
+                        logging.info("Locked account \x1b[38;5;196m[!]\x1b[0m \x1b[38;5;8m(%s...)\x1b[0m" % (token[:20]))
+                        try: self.tokens.remove(token)
+                        except ValueError: pass
+        except Exception as e:
+            logging.info(f"Error checking token: {e}")
+        return False
+
+    async def set_status(self, token, status_text):
+        try:
+            headers = await self.headers(token)
+            session, proxy = self.get_session(headers)
+            async with session as client:
+                # Setting custom status via REST (limited but works for simple text)
+                payload = {"custom_status": {"text": status_text}}
+                await client.patch("https://discord.com/api/v9/users/@me/settings", json=payload, proxy=proxy)
+        except:
             pass
 
     async def join(self, token):
@@ -224,10 +270,12 @@ class Discord(object):
                         logging.info("Successfully joined %s \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (self.guild_name[:20], token[:59]))
                     elif response.status == 401:
                         logging.info("Invalid account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        self.tokens.remove(token)
+                        try: self.tokens.remove(token)
+                        except ValueError: pass
                     elif response.status == 403:
                         logging.info("Locked account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        self.tokens.remove(token)
+                        try: self.tokens.remove(token)
+                        except ValueError: pass
                     elif response.status == 429:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
         except Exception:
@@ -245,11 +293,13 @@ class Discord(object):
                         return json["id"]
                     elif response.status == 401:
                         logging.info("Invalid account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        self.tokens.remove(token)
+                        try: self.tokens.remove(token)
+                        except ValueError: pass
                         return False
                     elif response.status == 403:
-                        logging.info("Locked account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        self.tokens.remove(token)
+                        logging.info("Locked account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[1m" % (token[:59]))
+                        try: self.tokens.remove(token)
+                        except ValueError: pass
                         return False
                     elif response.status == 429:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
@@ -260,54 +310,90 @@ class Discord(object):
         except Exception:
             return await self.create_dm(token, user_id)
 
-    async def direct_message(self, token: str, channel: str):
+    async def direct_message(self, token: str, channel: str, user_data=None):
         try:
             # Add random delay before sending message
             await asyncio.sleep(random.uniform(1.5, 4.0))
             headers = await self.headers(token)
-            async with ClientSession(headers=headers) as client:
+            
+            # Resolve Spintax and Placeholders
+            content = parse_spintax(self.message)
+            content = resolve_placeholders(content, user_data)
+
+            session, proxy = self.get_session(headers)
+            async with session as client:
                 if self.image != "":
                     data = FormData()
-                    data.add_field("payload_json", json.dumps({"content": self.message, "nonce": self.nonce(), "tts": False}))
+                    data.add_field("payload_json", json.dumps({"content": content, "nonce": self.nonce(), "tts": False}))
                     data.add_field("file", open(self.image, "rb"))
-                    request = client.post("https://discord.com/api/v9/channels/%s/messages" % (channel), data=data)
+                    request = client.post("https://discord.com/api/v9/channels/%s/messages" % (channel), data=data, proxy=proxy)
                 else:
-                    request = client.post("https://discord.com/api/v9/channels/%s/messages" % (channel), json={"content": self.message, "nonce": self.nonce(), "tts":False})
+                    # Support Embed JSON if content starts with { and ends with }
+                    if content.strip().startswith("{") and content.strip().endswith("}"):
+                        try:
+                            embed_data = json.loads(content)
+                            request = client.post("https://discord.com/api/v9/channels/%s/messages" % (channel), json=embed_data, proxy=proxy)
+                        except:
+                            request = client.post("https://discord.com/api/v9/channels/%s/messages" % (channel), json={"content": content, "nonce": self.nonce(), "tts":False}, proxy=proxy)
+                    else:
+                        request = client.post("https://discord.com/api/v9/channels/%s/messages" % (channel), json={"content": content, "nonce": self.nonce(), "tts":False}, proxy=proxy)
 
                 async with request as response:
                     response_data = await response.json()
                     if response.status == 200:
                         logging.info("Successfully sent message \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
+                        self.stats["sent"] += 1
                     elif response.status == 401:
                         logging.info("Invalid account \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        self.tokens.remove(token)
+                        try: self.tokens.remove(token)
+                        except ValueError: pass
+                        self.stats["failed"] += 1
                         return False
-                    elif response.status == 403 and response_data["code"] == 40003:
+                    elif response.status == 403 and response_data.get("code") == 40003:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
+                        self.stats["ratelimited"] += 1
                         await asyncio.sleep(random.uniform(10.0, 15.0))
-                        await self.direct_message(token, channel)
-                    elif response.status == 403 and response_data["code"] == 50007:
+                        await self.direct_message(token, channel, user_data)
+                    elif response.status == 403 and response_data.get("code") == 50007:
                         logging.info("User has direct messages disabled \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                    elif response.status == 403 and response_data["code"] == 40002:
+                        self.stats["failed"] += 1
+                    elif response.status == 403 and response_data.get("code") == 40002:
                         logging.info("Locked \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
-                        self.tokens.remove(token)
+                        try: self.tokens.remove(token)
+                        except ValueError: pass
+                        self.stats["failed"] += 1
                         return False
                     elif response.status == 429:
                         logging.info("Ratelimited \x1b[38;5;9m(\x1b[0m%s\x1b[38;5;9m)\x1b[0m" % (token[:59]))
+                        self.stats["ratelimited"] += 1
                         await asyncio.sleep(random.uniform(10.0, 15.0))
-                        await self.direct_message(token, channel)
+                        await self.direct_message(token, channel, user_data)
                     else:
+                        self.stats["failed"] += 1
                         return False
-        except Exception:
-            await self.direct_message(token, channel)
+                    
+                    if self.webhook_url:
+                        await self.log_to_webhook(f"Token: {token[:10]}... | Target: {channel} | Status: {response.status}")
+        except Exception as e:
+            logging.info(f"Error in direct_message: {e}")
+            await self.direct_message(token, channel, user_data)
 
-    async def send(self, token: str, user: str):
-        channel = await self.create_dm(token, user)
+    async def send(self, token: str, user_data: dict):
+        user_id = user_data if isinstance(user_data, str) else user_data.get('id')
+        if user_id in self.blacklist:
+            logging.info(f"Skipping blacklisted user: {user_id}")
+            return
+            
+        channel = await self.create_dm(token, user_id)
         if channel == False:
-            return await self.send(random.choice(self.tokens), user)
-        response = await self.direct_message(token, channel)
+            if len(self.tokens) > 0:
+                return await self.send(random.choice(self.tokens), user_data)
+            return
+        response = await self.direct_message(token, channel, user_data if isinstance(user_data, dict) else None)
         if response == False:
-            return await self.send(random.choice(self.tokens), user)
+            if len(self.tokens) > 0:
+                return await self.send(random.choice(self.tokens), user_data)
+            return
 
     async def send_channel(self, token: str, channel_id: str):
         response = await self.direct_message(token, channel_id)
@@ -323,6 +409,8 @@ class Discord(object):
             for token in self.tokens:
                 if len(self.tokens) != 0:
                     await pool.put(self.login(token))
+                    if self.status_text != "":
+                        await pool.put(self.set_status(token, self.status_text))
                 else:
                     self.stop()
                     
@@ -367,8 +455,8 @@ class Discord(object):
                  self.targets = self.targets * self.amount
                  logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m channels (Multipier: %s)" % (len(self.targets) // self.amount, self.amount))
             else:
-                  self.targets = scraper.fetch()
-                  logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m members" % (len(self.targets)))
+                  self.targets = scraper.fetch(filter_online=self.filter_online, exclude_bots=self.exclude_bots)
+                  logging.info("Successfully scraped \x1b[38;5;9m%s\x1b[0m members (Filtered: %s)" % (len(self.targets), "Yes" if self.filter_online else "No"))
         elif self.mode == "4":
             if os.path.exists(self.user_ids):
                 with open(self.user_ids, "r") as f:
@@ -392,9 +480,17 @@ class Discord(object):
                         await pool.put(self.send_channel(random.choice(self.tokens), target))
                     else:
                         await pool.put(self.send(random.choice(self.tokens), target))
+                    
+                    # Log real-time stats
+                    print(f"\r\x1b[38;5;46m[STATS]\x1b[0m Sent: {self.stats['sent']} | Failed: {self.stats['failed']} | RateLimited: {self.stats['ratelimited']}", end="")
+                    
                     if self.delay != 0: await asyncio.sleep(self.delay)
                 else:
                     self.stop()
+        
+        print(f"\n\n\x1b[38;5;46m[✓] TASK COMPLETED!\x1b[0m Final Stats - Sent: {self.stats['sent']}, Failed: {self.stats['failed']}, RateLimited: {self.stats['ratelimited']}")
+        if self.webhook_url:
+            await self.log_to_webhook(f"✅ Campaign Finished! Wysłano: {self.stats['sent']} | Błędy: {self.stats['failed']}")
 
 if __name__ == "__main__":
     try:

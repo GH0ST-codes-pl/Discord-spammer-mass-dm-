@@ -31,11 +31,16 @@
 - 📺 **Mass Channel Messaging** - Send messages to all channels in a server
 - 🖼️ **Image Support** - Attach images to your messages
 - ⚡ **Header Caching** - Optimized performance with intelligent caching
-- 🛡️ **Rate Limit Protection** - Random delays to prevent account bans
+- 🛡️ **Advanced Anti-Ban** - Random delays, **Proxy support**, and **Spintax** (`{hi|hello}`)
 - 🔄 **Multi-Token Support** - Use multiple accounts simultaneously
-- 🎲 **Human-like Behavior** - Random delays simulate natural user activity
-- 👥 **Target Multiple IDs** - Send messages to a specific list of User IDs (from file or console)
-- 📜 **Message Content Fetch** - Use content from an existing Discord message instead of manual input
+- 🎲 **Human-like Behavior** - Random delays and **Custom Status (Rich Presence)**
+- 👥 **Target Multiple IDs** - Send messages to a specific list of User IDs
+- 📜 **Message Content Fetch** - Use content from an existing Discord message
+- 🛰️ **Webhook Logging** - Send campaign reports directly to your Discord server
+- 📊 **Real-time Stats** - Monitor success, failures, and rate limits in real-time
+- 🖤 **Blacklist** - Skip specific users or server IDs automatically
+- 🔍 **Filtering** - Scrape only Online/DND/Idle users and exclude bots
+- ✉️ **Embed Support** - Send professional looking Embeds via JSON
 
 ---
 
@@ -260,6 +265,12 @@ sudo pacman -S python python-pip git
 
 **⚠️ Security Warning:** Never share your tokens with anyone. They provide full access to your account.
 
+### Advanced Configuration
+
+- **Proxies:** Add your proxies to `data/proxies.txt` (format: `ip:port` or `user:pass@ip:port`).
+- **Blacklist:** Add User IDs to `data/blacklist.txt` to ignore them.
+- **Webhook:** Create `data/webhook.txt` and paste your Discord Webhook URL for remote logging.
+
 ---
 
 ## 🚀 Usage
@@ -434,16 +445,21 @@ If you find this project useful, please consider giving it a star ⭐
 
 ### ✨ Funkcje
 
-- 🎯 **Single User DM** - Wysyłaj wiadomości do konkretnych użytkowników z możliwością spamowania
+- 🎯 **Single User DM** - Wysyłaj wiadomości do konkretnych ID z możliwością spamowania
 - 📢 **Mass DM** - Pobieraj członków serwera i wysyłaj masowe wiadomości prywatne
 - 📺 **Mass Channel** - Wysyłaj wiadomości na wszystkie kanały serwera
 - 🖼️ **Obsługa Obrazów** - Dołączaj obrazy do wiadomości
-- ⚡ **Cache Nagłówków** - Zoptymalizowana wydajność z inteligentnym cache'owaniem
-- 🛡️ **Ochrona przed Rate Limit** - Losowe opóźnienia zapobiegają blokowaniu konta
+- ⚡ **Cache Nagłówków** - Zoptymalizowana wydajność
+- 🛡️ **Zaawansowany Anti-Ban** - Losowe opóźnienia, **Obsługa Proxy** i **Spintax** (`{cześć|siema}`)
 - 🔄 **Wsparcie Wielu Tokenów** - Używaj wielu kont jednocześnie
-- 🎲 **Zachowanie Jak Człowiek** - Losowe opóźnienia symulują naturalną aktywność
-- 👥 **Targetowanie Wielu ID** - Wysyłaj wiadomości do konkretnej listy ID (z pliku lub konsoli)
+- 🎲 **Zachowanie Jak Człowiek** - Losowe opóźnienia i **Własny Status (Rich Presence)**
+- 👥 **Targetowanie Wielu ID** - Wysyłaj wiadomości do konkretnej listy ID
 - 📜 **Pobieranie Treści Wiadomości** - Użyj treści z istniejącej wiadomości Discord
+- 🛰️ **Webhook Logging** - Raporty z kampanii prosto na Twój serwer Discord
+- 📊 **Statystyki Live** - Monitoruj sukcesy i błędy w czasie rzeczywistym
+- 🖤 **Czarna Lista** - Automatycznie omijaj konkretne osoby lub serwery
+- 🔍 **Filtrowanie** - Scrapuj tylko osoby Online/Zaraz Wracam i omijaj boty
+- ✉️ **Wsparcie Embedów** - Wysyłaj profesjonalne Embedy przez format JSON
 
 ---
 
@@ -667,6 +683,12 @@ sudo pacman -S python python-pip git
 3. Zapisz plik
 
 **⚠️ Ostrzeżenie Bezpieczeństwa:** Nigdy nie udostępniaj swoich tokenów nikomu. Dają one pełny dostęp do Twojego konta.
+
+### Zaawansowana Konfiguracja
+
+- **Proxy:** Dodaj swoje proxy do `data/proxies.txt` (format: `ip:port` lub `użytkownik:hasło@ip:port`).
+- **Czarna Lista:** Dodaj ID użytkowników do `data/blacklist.txt`, aby ich ignorować.
+- **Webhook:** Stwórz plik `data/webhook.txt` i wklej URL Webhooka Discord dla zdalnych logów.
 
 ---
 
