@@ -8,9 +8,9 @@
 
 ### 🚀 Made by [GH0ST-codes-pl](https://github.com/GH0ST-codes-pl)
 
-![CLI Preview](preview.png)
+![CLI Preview](assets/cli_preview_v2.5.png)
 
-*A powerful multi-functional Discord selfbot for automated direct messaging with Advanced Stealth (V2.5)*
+*A premium Discord Mass DM Advertiser (V2.5 Stealth) designed for high performance, maximum security, and ease of use. Features advanced human-like behavior, multi-token support, and real-time monitoring.*
 
 [English](#-english) | [Polski](#-polski)
 
@@ -49,12 +49,12 @@
 
 To minimize the risk of being blocked by Discord, follow these guidelines for each mode:
 
-| Mode | Recommended Delay | Recommended Account Count | Stealth Settings |
-| :--- | :--- | :--- | :--- |
-| 🎯 **Single User DM** | 3.0s - 5.0s | 1 token | Use Spintax & Personalization |
-| 📢 **Mass DM** | 10.0s - 15.0s | 5+ tokens | **Typing: ON**, Proxy: ON |
-| 📺 **Mass Channel** | 5.0s - 8.0s | 1-2 tokens | Custom status enabled |
-| 👥 **Multiple IDs** | 10.0s+ | 3+ tokens | Randomized headers enabled |
+| Mode | Recommended Delay | Recommended Account Count | Stealth Settings | Best Practice |
+| :--- | :--- | :--- | :--- | :--- |
+| 🎯 **Single User DM** | 5.0s - 10.0s | 1 token | Use Spintax & Personalization | Keep message count low (<50/h) |
+| 📢 **Mass DM** | 30.0s - 60.0s | 10+ tokens | **Typing: ON**, Proxy: ON | Rotate tokens and use old IDs |
+| 📺 **Mass Channel** | 20.0s - 30.0s | 1-2 tokens | Custom status enabled | Avoid constant spamming |
+| 👥 **Multiple IDs** | 45.0s+ | 5+ tokens | Randomized headers enabled | Use a diverse user list |
 
 > [!IMPORTANT]
 > Always use **Proxies** and **Spintax** for Mass DM campaigns. Avoid sending the exact same message hundreds of times.
@@ -485,12 +485,12 @@ If you find this project useful, please consider giving it a star ⭐
 
 Aby zminimalizować ryzyko blokady konta przez Discord, stosuj się do poniższych zaleceń dla każdego trybu:
 
-| Tryb | Zalecany Delay | Zalecana Ilość Kont | Ustawienia Stealth |
-| :--- | :--- | :--- | :--- |
-| 🎯 **Single User DM** | 3.0s - 5.0s | 1 token | Używaj Spintax i Personalizacji |
-| 📢 **Mass DM** | 10.0s - 15.0s | 5+ tokenów | **Pisanie: WŁ**, Proxy: WŁ |
-| 📺 **Mass Channel** | 5.0s - 8.0s | 1-2 tokeny | Włączony Custom Status |
-| 👥 **Wybór wielu ID** | 10.0s+ | 3+ tokeny | Włączone dynamiczne nagłówki |
+| Tryb | Zalecany Delay | Zalecana Ilość Kont | Ustawienia Stealth | Najlepsze Praktyki |
+| :--- | :--- | :--- | :--- | :--- |
+| 🎯 **Single User DM** | 5.0s - 10.0s | 1 token | Używaj Spintax i Personalizacji | Mała ilość wiadomości (<50/h) |
+| 📢 **Mass DM** | 30.0s - 60.0s | 10+ tokenów | **Pisanie: WŁ**, Proxy: WŁ | Rotuj tokeny i używaj starych ID |
+| 📺 **Mass Channel** | 20.0s - 30.0s | 1-2 tokeny | Włączony Custom Status | Unikaj ciągłego spamu |
+| 👥 **Wybór wielu ID** | 45.0s+ | 5+ tokeny | Włączone dynamiczne nagłówki | Używaj zróżnicowanej listy |
 
 > [!IMPORTANT]
 > Zawsze używaj **Proxy** i **Spintax** przy masowych kampaniach. Unikaj wysyłania tej samej wiadomości setki razy pod rząd.
